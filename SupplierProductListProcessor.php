@@ -58,6 +58,6 @@ function parse($fileName)
 };
 
 // todo: allow passing in arguments
-parse("D:\Projects\TBPS GitHub Test\supplier-product-list-processor\SupplierProductListProcessor.php");
+parse("D:/Projects/TBPS GitHub Test/examples/products_comma_separated.csv");
 
 ?>
