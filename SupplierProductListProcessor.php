@@ -3,6 +3,7 @@
 // assign arguments passed in to an array
 // file: = the file to parse
 // unique-combinations: the file to write grouped count for each unique combination i.e. make, model, etc.
+//                      will be created if not found.
 $givenArgs = getopt("", array("file:", "unique-combinations:", "max-lines"));
 
 class Product
@@ -30,7 +31,7 @@ class Combination
     }
 }
 
-function parse($fileName, $uniqueCombinationsFile, $maxLines = -1)
+function parse($fileName, $maxLines = -1)
 {
     $previousMemoryLimit = ini_get("memory_limit");
     ini_set("memory_limit", "256M");    // bandaid solution to not enough memory
@@ -45,7 +46,7 @@ function parse($fileName, $uniqueCombinationsFile, $maxLines = -1)
 
     // loop through each line of the file and assign properties to each product
     $count = 0;
-    while (!feof($file))    // repeat until the end of the file
+    while (!feof($file) && $count <= 100)    // repeat until the end of the file
     {
         // construct product with header information
         $products[$count] = new Product($properties);
@@ -77,16 +78,12 @@ function parse($fileName, $uniqueCombinationsFile, $maxLines = -1)
             echo $properties[$j] . ": " . $products[$i]->properties[$j] . PHP_EOL;  // print product properties
         }
     }
-    
-    writeCombinations($products, $uniqueCombinationsFile);
 
     return $products;
 };
 
-function writeCombinations($products, $fileName)
+function findCombinations($products)
 {
-    //$file = fopen($fileName, "w");
-
     $combinations = array();
     $count = 0; // number of combinations
 
@@ -130,6 +127,13 @@ function writeCombinations($products, $fileName)
 
     echo PHP_EOL;
     print_r($combinations);
+
+    return $combinations;
+}
+
+function writeCombinations($fileName, $combinations)
+{
+
 }
 
 function compare($productX, $productY)
@@ -165,7 +169,9 @@ function productExists($product, $combinations)
     //return in_array($combination, $combinations, true);
 }
 
-parse("D:/Projects/TBPS GitHub Test/examples/products_comma_separated.csv", "D:\Projects\TBPS GitHub Test\examples\combination_count.csv");
+$products = parse("D:/Projects/TBPS GitHub Test/examples/products_comma_separated.csv");
+$combinations = findCombinations($products);
+writeCombinations("D:/Projects/TBPS GitHub Test/examples/combination_count.csv", $combinations);
 
 // parse using given arguments
 //parse($givenArgs["file"], $givenArgs["unique-combinations"], $givenArgs["max-lines"]);
