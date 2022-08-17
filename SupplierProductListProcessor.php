@@ -1,5 +1,8 @@
 <?php
 
+// assign arguments passed in to an array
+$givenArgs = getopt("", array("file:", "unique-combinations:"));
+
 class Product
 {
     // array of properties (e.g., make, model, colour, etc.)
@@ -12,7 +15,7 @@ class Product
     }
 };
 
-function parse($fileName)
+function parse($fileName, $uniqueCombinationsFile)
 {
     $previousMemoryLimit = ini_get("memory_limit");
     ini_set("memory_limit", "256M");    // bandaid solution to not enough memory
@@ -62,6 +65,8 @@ function parse($fileName)
     return $products;
 };
 
-// todo: allow passing in arguments
-parse("D:/Projects/TBPS GitHub Test/examples/products_comma_separated.csv");
+//parse("D:/Projects/TBPS GitHub Test/examples/products_comma_separated.csv");
+
+// parse using given arguments
+parse($givenArgs["file"], $givenArgs["unique-combinations"]);
 ?>
