@@ -37,6 +37,7 @@ class Combination
 }
 
 class FileOpenException extends \Exception {}
+class FileCreateException extends \Exception {}
 class MissingFieldException extends \Exception {}
 
 function parse($fileName, $maxLines = -1)
@@ -135,7 +136,7 @@ function writeCombinations($fileName, $combinations)
 {
     if (!$file = fopen($fileName, "w"))
     {
-        throw new FileOpenException("Failed to open file. Make sure that you typed the file name correctly, and that this has write access to it (is the file already open?).");
+        throw new FileCreateException("Failed to create file. Make sure you wrote a valid name, and that you have write permissions to this directory.");
         return;
     }
 
