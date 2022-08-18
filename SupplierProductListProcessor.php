@@ -117,7 +117,7 @@ function find_combinations($products)
     $combinations = array();
     $count = 0; // number of combinations
 
-    for ($i = 0; $i < count($products) - 1; $i++)
+    for ($i = 0; $i < count($products); $i++)
     {
         if (product_exists($products[$i], $combinations))
         {
