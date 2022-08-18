@@ -36,6 +36,9 @@ class Combination
     }
 }
 
+class FileOpenException extends \Exception {}
+class MissingFieldException extends \Exception {}
+
 function parse($fileName, $maxLines = -1)
 {
     $previousMemoryLimit = ini_get("memory_limit");
@@ -43,7 +46,10 @@ function parse($fileName, $maxLines = -1)
                                         // this will need to be changed for longer files
                                         // todo: programmatically increase memory limit based on file length?
 
-    $file = fopen($fileName, "r") or die("Failed to open file.");
+    if (!$file = fopen($fileName, "r")){
+        throw new FileOpenException("Failed to open file. Make sure that you typed the file name correctly, and that this has write access to it (is the file already open?).");
+        return;
+    }
 
     $products = array();
     Headers::$headers = explode(",", fgets($file));     // assign header information as our properties
@@ -54,8 +60,13 @@ function parse($fileName, $maxLines = -1)
 
     // loop through each line of the file and assign properties to each product
     $count = 0;
-    while (!feof($file) && $count <= 100)    // repeat until the end of the file
+    while (!feof($file))    // repeat until the end of the file
     {
+        if ($maxLines >= 0 && $count >= $maxLines)
+        {
+            break;
+        }
+
         // construct product with header information
         $products[$count] = new Product(Headers::$headers);
         
@@ -122,7 +133,11 @@ function findCombinations($products)
 
 function writeCombinations($fileName, $combinations)
 {
-    $file = fopen($fileName, "w") or die("Failed to open file.");
+    if (!$file = fopen($fileName, "w"))
+    {
+        throw new FileOpenException("Failed to open file. Make sure that you typed the file name correctly, and that this has write access to it (is the file already open?).");
+        return;
+    }
 
     // write headers
     fwrite($file, ArrayUtils::wrapImplode(Headers::$headers, '', ',count', ','));
@@ -187,7 +202,7 @@ class ArrayUtils
     } 
 }
 
-$products = parse("D:/Projects/TBPS GitHub Test/examples/products_comma_separated.csv");
+$products = parse("D:/Projects/TBPS GitHub Test/examples/products_comma_separated.csv", 1000);
 
 //$products = parse($givenArgs["file"], $givenArgs["max-lines"]);
 $combinations = findCombinations($products);
