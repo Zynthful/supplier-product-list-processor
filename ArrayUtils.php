@@ -1,7 +1,7 @@
 <?php
 class ArrayUtils
 {
-    public static function wrapImplode( $array, $before = '', $after = '', $separator = '' )
+    public static function wrap_implode( $array, $before = '', $after = '', $separator = '' )
     {
         if(!$array)
             return '';
@@ -9,7 +9,7 @@ class ArrayUtils
         return $before . implode($separator, $array ) . $after;
     }
 
-    public static function fullyWrapImplode( $array, $before = '', $after = '', $separator = '' )
+    public static function fully_wrap_implode( $array, $before = '', $after = '', $separator = '' )
     {
         if(!$array)
             return '';

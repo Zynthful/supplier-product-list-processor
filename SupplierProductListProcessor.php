@@ -92,14 +92,14 @@ function parse($fileName, $maxLines = -1)
     return $products;
 };
 
-function findCombinations($products)
+function find_combinations($products)
 {
     $combinations = array();
     $count = 0; // number of combinations
 
     for ($i = 0; $i < count($products) - 1; $i++)
     {
-        if (productExists($products[$i], $combinations))
+        if (product_exists($products[$i], $combinations))
         {
             // increment number of products in combination
             $combinations[$count - 1]->count++;
@@ -114,7 +114,7 @@ function findCombinations($products)
     return $combinations;
 }
 
-function writeCombinations($fileName, $combinations)
+function write_combinations($fileName, $combinations)
 {
     if (!$file = fopen($fileName, "w"))
     {
@@ -123,13 +123,13 @@ function writeCombinations($fileName, $combinations)
     }
 
     // write headers
-    fwrite($file, ArrayUtils::wrapImplode(Headers::$headers, '', ',count', ','));
+    fwrite($file, ArrayUtils::wrap_implode(Headers::$headers, '', ',count', ','));
     fwrite($file, PHP_EOL);
 
     // write data
     for ($i = 0; $i < count($combinations); $i++)
     {
-        fwrite($file, ArrayUtils::wrapImplode($combinations[$i]->product->properties, '', ",{$combinations[$i]->count}", ','));
+        fwrite($file, ArrayUtils::wrap_implode($combinations[$i]->product->properties, '', ",{$combinations[$i]->count}", ','));
         fwrite($file, PHP_EOL);
     }
 
@@ -138,7 +138,7 @@ function writeCombinations($fileName, $combinations)
 
 // check if a product exists in a combination
 // returns: true if a product exists, otherwise false
-function productExists($product, $combinations)
+function product_exists($product, $combinations)
 {
     // compare this product against all combinations' products
     foreach ($combinations as $combination)
@@ -154,8 +154,8 @@ function productExists($product, $combinations)
 $products = parse("D:/Projects/TBPS GitHub Test/examples/products_comma_separated.csv", 1000);
 
 //$products = parse($givenArgs["file"], $givenArgs["max-lines"]);
-$combinations = findCombinations($products);
+$combinations = find_combinations($products);
 //writeCombinations($givenArgs["unique-combinations"], $combinations);
 
-writeCombinations("D:/Projects/TBPS GitHub Test/examples/combination_count.csv", $combinations);
+write_combinations("D:/Projects/TBPS GitHub Test/examples/combination_count.csv", $combinations);
 ?>
