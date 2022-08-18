@@ -2,6 +2,7 @@
 
 require 'Exceptions.php';
 require 'ArrayUtils.php';
+require 'FileUtils.php';
 require 'Product.php';
 
 // assign arguments passed in to an array
@@ -40,8 +41,10 @@ function parse($fileName, $maxLines = -1)
         return;
     }
 
+    $separator = FileUtils::get_separator_from_filename($fileName);
+
     $products = array();
-    Headers::$headers = explode(",", fgets($file));     // assign header information as our properties
+    Headers::$headers = explode($separator, fgets($file));     // assign header information as our properties
                                                         // todo: allow for different separators (e.g., .tsv file)
 
     // remove last line in the array since it is a newline
@@ -60,7 +63,7 @@ function parse($fileName, $maxLines = -1)
         $products[$count] = new Product(Headers::$headers);
         
         // get corresponding property info from the current line
-        $_properties = explode(",", fgets($file));
+        $_properties = explode($separator, fgets($file));
 
         // remove last line in the array since it is a newline
         unset($_properties[count($_properties) - 1]);
@@ -92,6 +95,7 @@ function parse($fileName, $maxLines = -1)
     return $products;
 };
 
+// when given an array of products, it returns an array of unique combinations of products
 function find_combinations($products)
 {
     $combinations = array();
@@ -114,6 +118,7 @@ function find_combinations($products)
     return $combinations;
 }
 
+// writes the given combinations to the given file
 function write_combinations($fileName, $combinations)
 {
     if (!$file = fopen($fileName, "w"))
@@ -122,14 +127,16 @@ function write_combinations($fileName, $combinations)
         return;
     }
 
+    $separator = FileUtils::get_separator_from_filename($fileName);
+
     // write headers
-    fwrite($file, ArrayUtils::wrap_implode(Headers::$headers, '', ',count', ','));
+    fwrite($file, ArrayUtils::wrap_implode(Headers::$headers, '', "{$separator}count", $separator));
     fwrite($file, PHP_EOL);
 
     // write data
     for ($i = 0; $i < count($combinations); $i++)
     {
-        fwrite($file, ArrayUtils::wrap_implode($combinations[$i]->product->properties, '', ",{$combinations[$i]->count}", ','));
+        fwrite($file, ArrayUtils::wrap_implode($combinations[$i]->product->properties, '', "{$separator}{$combinations[$i]->count}", $separator));
         fwrite($file, PHP_EOL);
     }
 
