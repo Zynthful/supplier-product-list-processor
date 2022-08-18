@@ -1,5 +1,9 @@
 <?php
 
+require 'Exceptions.php';
+require 'ArrayUtils.php';
+require 'Product.php';
+
 // assign arguments passed in to an array
 // file: the file to parse
 // unique-combinations: the file to write grouped count for each unique combination i.e. make, model, etc.
@@ -10,18 +14,6 @@ class Headers
 {
     public static $headers;
 }
-
-class Product
-{
-    // array of properties (e.g., make, model, colour, etc.)
-    public $properties;
-
-    // constructor to assign properties
-    function __construct($properties)
-    {
-        $this->properties = $properties;
-    }
-};
 
 // unique combination of products, grouped under the same properties
 class Combination
@@ -35,10 +27,6 @@ class Combination
         $this->count = $count;
     }
 }
-
-class FileOpenException extends \Exception {}
-class FileCreateException extends \Exception {}
-class MissingFieldException extends \Exception {}
 
 function parse($fileName, $maxLines = -1)
 {
@@ -111,8 +99,6 @@ function findCombinations($products)
 
     for ($i = 0; $i < count($products) - 1; $i++)
     {
-        echo PHP_EOL . $i;
-
         if (productExists($products[$i], $combinations))
         {
             // increment number of products in combination
@@ -125,10 +111,6 @@ function findCombinations($products)
             $count++;   // increment number of combinations
         }
     }
-
-    echo PHP_EOL;
-    print_r($combinations);
-
     return $combinations;
 }
 
@@ -154,21 +136,6 @@ function writeCombinations($fileName, $combinations)
     fclose($file);
 }
 
-function compare($productX, $productY)
-{
-    // check for mismatch of properties
-    for ($i = 0; $i < count($productX->properties); $i++)
-    {
-        // does x property NOT match y property?
-        if (strcmp($productX->properties[$i], $productY->properties[$i]) != 0)
-        {
-            return false;
-        }
-    }
-    // if there are no mismatch of properties, then it's an exact match, and we return true
-    return true;
-}
-
 // check if a product exists in a combination
 // returns: true if a product exists, otherwise false
 function productExists($product, $combinations)
@@ -182,25 +149,6 @@ function productExists($product, $combinations)
         }
     }
     return false;
-}
-
-class ArrayUtils
-{
-    public static function wrapImplode( $array, $before = '', $after = '', $separator = '' )
-    {
-        if(!$array)
-            return '';
-        
-        return $before . implode($separator, $array ) . $after;
-    }
-
-    public static function fullyWrapImplode( $array, $before = '', $after = '', $separator = '' )
-    {
-        if(!$array)
-            return '';
-        
-        return $before . implode("{$before}{$separator}{$after}", $array ) . $after;
-    } 
 }
 
 $products = parse("D:/Projects/TBPS GitHub Test/examples/products_comma_separated.csv", 1000);
