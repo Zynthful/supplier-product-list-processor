@@ -6,6 +6,11 @@
 //                      will be created if not found.
 $givenArgs = getopt("", array("file:", "unique-combinations:", "max-lines"));
 
+class Headers
+{
+    public static $headers;
+}
+
 class Product
 {
     // array of properties (e.g., make, model, colour, etc.)
@@ -38,21 +43,28 @@ function parse($fileName, $maxLines = -1)
                                         // this will need to be changed for longer files
                                         // todo: programmatically increase memory limit based on file length?
 
-    $file = fopen($fileName, "r") or die("Unable to open file.");
+    $file = fopen($fileName, "r") or die("Failed to open file.");
 
     $products = array();
-    $properties = explode(",", fgets($file));   // assign header information as our properties
-                                                // todo: allow for different separators (e.g., .tsv file)
+    Headers::$headers = explode(",", fgets($file));     // assign header information as our properties
+                                                        // todo: allow for different separators (e.g., .tsv file)
+
+    // for some reason, the above explode returns a new line for the last element
+    // so we remove this last element here
+    unset(Headers::$headers[count(Headers::$headers) - 1]);
 
     // loop through each line of the file and assign properties to each product
     $count = 0;
     while (!feof($file) && $count <= 100)    // repeat until the end of the file
     {
         // construct product with header information
-        $products[$count] = new Product($properties);
+        $products[$count] = new Product(Headers::$headers);
         
         // get corresponding property info from the current line
         $_properties = explode(",", fgets($file));
+
+        // remove last element since it's a new line for some reason?
+        unset($_properties[count($_properties) - 1]);
 
         for ($i = 0; $i < count($_properties); $i++)
         {
@@ -72,10 +84,10 @@ function parse($fileName, $maxLines = -1)
     // print product information
     for ($i = 0; $i < count($products); $i++)
     {
-        echo "Product " . $i . PHP_EOL; // print product index
-        for ($j = 0; $j < count($properties); $j++)
+        echo PHP_EOL . "Product " . $i . PHP_EOL; // print product index
+        for ($j = 0; $j < count(Headers::$headers); $j++)
         {
-            echo $properties[$j] . ": " . $products[$i]->properties[$j] . PHP_EOL;  // print product properties
+            echo Headers::$headers[$j] . ": " . $products[$i]->properties[$j] . PHP_EOL;  // print product properties
         }
     }
 
@@ -93,13 +105,13 @@ function findCombinations($products)
 
         if (productExists($products[$i], $combinations))
         {
-            echo PHP_EOL . "increment";
+            //echo PHP_EOL . "increment";
             // increment number of products in combination
             $combinations[$count - 1]->count++;
         }
         else
         {
-            echo PHP_EOL . "new";
+            //echo PHP_EOL . "new";
             // create new combination
             $combinations[$count] = new Combination($products[$i], 1);
             $count++;   // increment number of combinations
@@ -133,7 +145,22 @@ function findCombinations($products)
 
 function writeCombinations($fileName, $combinations)
 {
+    $file = fopen($fileName, "w") or die("Failed to open file.");
 
+    // write headers, plus count
+    // todo: get properties as a global variable
+    //$currentLine = __LINE__;
+
+    fwrite($file, ArrayUtils::wrapImplode(Headers::$headers, '', ',count', ','));
+    fwrite($file, PHP_EOL);
+    //FileUtils::appendToLineByName($fileName, $currentLine, "count", ",");
+
+    // write data
+    for ($i = 0; $i < count($combinations); $i++)
+    {
+        fwrite($file, ArrayUtils::wrapImplode($combinations[$i]->product->properties, '', ",{$combinations[$i]->count}", ','));
+        fwrite($file, PHP_EOL);
+    }
 }
 
 function compare($productX, $productY)
@@ -160,19 +187,52 @@ function productExists($product, $combinations)
     {
         if (compare($product, $combination->product))
         {
-            echo PHP_EOL . "match!";
+            //echo PHP_EOL . "match!";
             return true;
         }
     }
-    echo PHP_EOL . "no match : (";
+    //echo PHP_EOL . "no match : (";
     return false;
     //return in_array($combination, $combinations, true);
 }
 
-$products = parse("D:/Projects/TBPS GitHub Test/examples/products_comma_separated.csv");
-$combinations = findCombinations($products);
-writeCombinations("D:/Projects/TBPS GitHub Test/examples/combination_count.csv", $combinations);
+class FileUtils
+{
+    public static function appendToLineByName($fileName, $lineIndex, $text, $separator = "")
+    {
+        FileUtils::appendToLineByFile(file($fileName), $lineIndex, $text, $separator);
+    }
+    
+    public static function appendToLineByFile($file, $lineIndex, $text, $separator = "")
+    {
+        $file[$lineIndex] = $file[$lineIndex] + $separator + $text;
+    }
+}
 
-// parse using given arguments
-//parse($givenArgs["file"], $givenArgs["unique-combinations"], $givenArgs["max-lines"]);
+class ArrayUtils
+{
+    public static function wrapImplode( $array, $before = '', $after = '', $separator = '' )
+    {
+        if(!$array)
+            return '';
+        
+        return $before . implode($separator, $array ) . $after;
+    }
+
+    public static function fullyWrapImplode( $array, $before = '', $after = '', $separator = '' )
+    {
+        if(!$array)
+            return '';
+        
+        return $before . implode("{$before}{$separator}{$after}", $array ) . $after;
+    } 
+}
+
+$products = parse("D:/Projects/TBPS GitHub Test/examples/products_comma_separated.csv");
+
+//$products = parse($givenArgs["file"], $givenArgs["max-lines"]);
+$combinations = findCombinations($products);
+//writeCombinations($givenArgs["unique-combinations"], $combinations);
+
+writeCombinations("D:/Projects/TBPS GitHub Test/examples/combination_count.csv", $combinations);
 ?>
