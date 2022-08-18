@@ -44,8 +44,10 @@ function parse($fileName, $maxLines = -1)
     $separator = FileUtils::get_separator_from_filename($fileName);
 
     $products = array();
-    Headers::$headers = explode($separator, fgets($file));     // assign header information as our properties
-                                                        // todo: allow for different separators (e.g., .tsv file)
+    Headers::$headers = explode($separator, fgets($file));      // assign header information as our properties
+                                                                // todo: allow for different separators (e.g., .tsv file)
+
+    ArrayUtils::unset_empty_lines(Headers::$headers);
 
     // remove last line in the array since it is a newline
     unset(Headers::$headers[count(Headers::$headers) - 1]);
@@ -59,19 +61,33 @@ function parse($fileName, $maxLines = -1)
             break;
         }
 
-        // construct product with header information
-        $products[$count] = new Product(Headers::$headers);
+        // construct product
+        $products[$count] = new Product();
         
         // get corresponding property info from the current line
-        $_properties = explode($separator, fgets($file));
+        $values = explode($separator, fgets($file));
 
         // remove last line in the array since it is a newline
-        unset($_properties[count($_properties) - 1]);
+        unset($values[count($values) - 1]);
 
-        for ($i = 0; $i < count($_properties); $i++)
+        ArrayUtils::unset_empty_lines($values);
+
+        for ($i = 0; $i < count($values); $i++)
         {
-            // assign corresponding property info to our product
-            $products[$count]->properties[$i] = $_properties[$i];
+            // construct property field for this product
+            $products[$count]->properties[$i] = new PropertyField(Headers::$headers[$i], $values[$i]);
+
+            // check if field is required by looking for '*' character in property name
+            if (str_contains($products[$count]->properties[$i]->name, "*"))
+            {
+                if (empty($products[$count]->properties[$i]->value))
+                {
+                    throw new MissingFieldException("Required field {$products[$count]->properties[$i]->name} on file {$fileName} line index {$count} is empty. Make sure all required fields on the file are filled in.");
+                }
+
+                $products[$count]->properties[$i]->required = true;
+                $products[$count]->properties[$i]->name = str_replace("*", "", $products[$count]->properties[$i]->name);
+            }
         }
 
         $count++;
@@ -85,10 +101,10 @@ function parse($fileName, $maxLines = -1)
     // print product information
     for ($i = 0; $i < count($products); $i++)
     {
-        echo PHP_EOL . "Product " . $i . PHP_EOL; // print product index
-        for ($j = 0; $j < count(Headers::$headers); $j++)
+        echo PHP_EOL . "Product {$i}" . PHP_EOL; // print product index
+        for ($j = 0; $j < count($products[$i]->properties); $j++)
         {
-            echo Headers::$headers[$j] . ": " . $products[$i]->properties[$j] . PHP_EOL;  // print product properties
+            echo "{$products[$i]->properties[$j]->name}: {$products[$i]->properties[$j]->value}" . PHP_EOL;  // print product properties
         }
     }
 
@@ -136,7 +152,7 @@ function write_combinations($fileName, $combinations)
     // write data
     for ($i = 0; $i < count($combinations); $i++)
     {
-        fwrite($file, ArrayUtils::wrap_implode($combinations[$i]->product->properties, '', "{$separator}{$combinations[$i]->count}", $separator));
+        fwrite($file, ArrayUtils::wrap_implode($combinations[$i]->product->get_values(), '', "{$separator}{$combinations[$i]->count}", $separator));
         fwrite($file, PHP_EOL);
     }
 

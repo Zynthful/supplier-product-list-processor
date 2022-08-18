@@ -1,15 +1,34 @@
 <?php
 class Product
 {
-    // array of properties (e.g., make, model, colour, etc.)
-    public $properties;
+    // array of PropertyFields
+    public $properties = array();
 
-    // constructor to assign properties
-    function __construct($properties)
+    // returns properties' values' as an array
+    public function get_values()
     {
-        $this->properties = $properties;
+        $values = array();
+        for ($i = 0; $i < count($this->properties); $i++)
+        {
+            $values[$i] = $this->properties[$i]->value;
+        }
+        return $values;
     }
-};
+}
+
+class PropertyField
+{
+    public $name;
+    public $value;
+    public $required = false;
+
+    function __construct($name, $value, $required = false)
+    {
+        $this->name = $name;
+        $this->value = $value;
+        $this->required = $required;
+    }
+}
 
 function compare($productX, $productY)
 {
@@ -17,7 +36,7 @@ function compare($productX, $productY)
     for ($i = 0; $i < count($productX->properties); $i++)
     {
         // does x property NOT match y property?
-        if (strcmp($productX->properties[$i], $productY->properties[$i]) != 0)
+        if (strcmp($productX->properties[$i]->value, $productY->properties[$i]->value) != 0)
         {
             return false;
         }
