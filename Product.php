@@ -30,6 +30,19 @@ class PropertyField
     }
 }
 
+// unique combination of products, grouped under the same properties
+class Combination
+{
+    public $product;
+    public $count = 0;  // number of products in this combination
+
+    function __construct($product, $count)
+    {
+        $this->product = $product;
+        $this->count = $count;
+    }
+}
+
 function compare($productX, $productY)
 {
     // check for mismatch of properties
@@ -43,5 +56,28 @@ function compare($productX, $productY)
     }
     // if there are no mismatch of properties, then it's an exact match, and we return true
     return true;
+}
+
+// when given an array of products, it returns an array of unique combinations of products
+function find_combinations($products)
+{
+    $combinations = array();
+    $count = 0; // number of combinations
+
+    for ($i = 0; $i < count($products); $i++)
+    {
+        if (product_exists($products[$i], $combinations))
+        {
+            // increment number of products in combination
+            $combinations[$count - 1]->count++;
+        }
+        else
+        {
+            // create new combination
+            $combinations[$count] = new Combination($products[$i], 1);
+            $count++;   // increment number of combinations
+        }
+    }
+    return $combinations;
 }
 ?>
