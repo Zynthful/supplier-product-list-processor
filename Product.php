@@ -60,26 +60,33 @@ function compare($productX, $productY)
     return true;
 }
 
+// check if a product exists in an array of combinations
+// if it exists, increase the counter
+// otherwise, push a new combination
+function product_exists($product, &$combinations)
+{
+    // compare this product against all combinations' products
+    foreach ($combinations as &$combination)
+    {
+        if (compare($product, $combination->product))
+        {
+            $combination->count++;
+            return true;
+        }
+    }
+    // add new combination to end of array
+    array_push($combinations, new Combination($product, 1));
+    return null;
+}
+
 // when given an array of products, it returns an array of unique combinations of products
 // optionally pass in an array of combinations to add the products to
 function find_combinations($products, &$combinations = array())
 {
-    $count = count($combinations); // number of combinations
-
-    // loop through all products (slow)
+    // loop through all products to check if it exists in any existing combinations
     for ($i = 0; $i < count($products); $i++)
     {
-        if (product_exists($products[$i], $combinations))
-        {
-            // increment number of products in combination
-            $combinations[$count - 1]->count++;
-        }
-        else
-        {
-            // create new combination
-            $combinations[$count] = new Combination($products[$i], 1);
-            $count++;   // increment number of combinations
-        }
+        product_exists($products[$i], $combinations);
     }
     return $combinations;
 }

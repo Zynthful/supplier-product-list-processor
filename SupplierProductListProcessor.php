@@ -96,16 +96,16 @@ function parse($fileName, $maxLines = -1)
     ini_set("memory_limit", $previousMemoryLimit);
 
     // print product information
-    for ($i = 0; $i < count($products); $i++)
-    {
-        // product index
-        echo PHP_EOL . "Product {$i}" . PHP_EOL;
-        for ($j = 0; $j < count($products[$i]->properties); $j++)
-        {
-            // PropertyName: PropertyValue
-            echo "{$products[$i]->properties[$j]->name}: {$products[$i]->properties[$j]->value}" . PHP_EOL;  // print product properties
-        }
-    }
+    // for ($i = 0; $i < count($products); $i++)
+    // {
+    //     // product index
+    //     echo PHP_EOL . "Product {$i}" . PHP_EOL;
+    //     for ($j = 0; $j < count($products[$i]->properties); $j++)
+    //     {
+    //         // PropertyName: PropertyValue
+    //         echo "{$products[$i]->properties[$j]->name}: {$products[$i]->properties[$j]->value}" . PHP_EOL;  // print product properties
+    //     }
+    // }
 
     return $products;
 };
@@ -135,26 +135,29 @@ function write_combinations($fileName, $combinations)
     fclose($file);
 }
 
-// check if a product exists in a combination
-// returns: true if a product exists, otherwise false
-function product_exists($product, $combinations)
-{
-    // compare this product against all combinations' products
-    foreach ($combinations as $combination)
-    {
-        if (compare($product, $combination->product))
-        {
-            return true;
-        }
-    }
-    return false;
-}
+// for ($i = 0; $i < 10; $i++)
+// {
+//     $lines = ($i + 1) * 1000;
+//     $products = parse("D:/Projects/TBPS GitHub Test/examples/products_tab_separated.tsv", $lines);
 
-$products = parse("D:/Projects/TBPS GitHub Test/examples/products_tab_separated.tsv", 100000);
+//     //$products = parse($givenArgs["file"], $givenArgs["max-lines"]);
+//     $combinations = find_combinations($products);
+//     //writeCombinations($givenArgs["unique-combinations"], $combinations);
+    
+//     write_combinations("D:/Projects/TBPS GitHub Test/examples/combination_count.tsv", $combinations);
+
+//     echo PHP_EOL . "{$lines}: Memory Peak (bytes): " . memory_get_peak_usage();
+// }
+
+$products = parse("D:/Projects/TBPS GitHub Test/examples/products_tab_separated.tsv", 40000);
 
 //$products = parse($givenArgs["file"], $givenArgs["max-lines"]);
 $combinations = find_combinations($products);
 //writeCombinations($givenArgs["unique-combinations"], $combinations);
 
 write_combinations("D:/Projects/TBPS GitHub Test/examples/combination_count.tsv", $combinations);
+
+echo PHP_EOL . "Memory Peak (MB): " . memory_get_peak_usage() * 0.000001;
+
+
 ?>
