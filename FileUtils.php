@@ -10,7 +10,7 @@ class FileUtils
 				return ",";
 				break;
 			case "tsv":
-				return "  ";
+				return "\t";
 				break;
 		}
 	}
