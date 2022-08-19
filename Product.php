@@ -43,27 +43,30 @@ class Combination
     }
 }
 
+// compare two products, x and y, to see if they match
+// returns: true if they are an exact match, false if they are different
 function compare($productX, $productY)
 {
-    // check for mismatch of properties
+    // check for mismatch of property values
     for ($i = 0; $i < count($productX->properties); $i++)
     {
-        // does x property NOT match y property?
+        // does x property value NOT match y property value?
         if (strcmp($productX->properties[$i]->value, $productY->properties[$i]->value) != 0)
         {
             return false;
         }
     }
-    // if there are no mismatch of properties, then it's an exact match, and we return true
+    // if there are no mismatch of property values, then it's an exact match, and we return true
     return true;
 }
 
 // when given an array of products, it returns an array of unique combinations of products
-function find_combinations($products)
+// optionally pass in an array of combinations to add the products to
+function find_combinations($products, &$combinations = array())
 {
-    $combinations = array();
-    $count = 0; // number of combinations
+    $count = count($combinations); // number of combinations
 
+    // loop through all products (slow)
     for ($i = 0; $i < count($products); $i++)
     {
         if (product_exists($products[$i], $combinations))
