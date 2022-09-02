@@ -14,6 +14,23 @@ class Product
         }
         return $values;
     }
+
+    // compare this product to another
+    // returns: true if they are an exact match, false if they are different
+    public function compare($product)
+    {
+        // check for mismatch of properties
+        for ($i = 0; $i < count($product->properties); $i++)
+        {
+            // if they don't match, return false
+            if (!$this->properties[$i]->compare($product->properties[$i]))
+            {
+                return false;
+            }
+        }
+        // if there are no mismatch of properties, then it's an exact match, and we return true
+        return true;
+    }
 }
 
 class PropertyField
@@ -27,6 +44,13 @@ class PropertyField
         $this->name = $name;
         $this->value = $value;
         $this->required = $required;
+    }
+
+    // compares this property field's value to another
+    // returns: true if both property field values match, false otherwise
+    public function compare($property)
+    {       
+        return strcmp($this->value, $property->value) == 0;
     }
 }
 
@@ -43,32 +67,17 @@ class Combination
     }
 }
 
-// compare two products, x and y, to see if they match
-// returns: true if they are an exact match, false if they are different
-function compare($productX, $productY)
-{
-    // check for mismatch of property values
-    for ($i = 0; $i < count($productX->properties); $i++)
-    {
-        // does x property value NOT match y property value?
-        if (strcmp($productX->properties[$i]->value, $productY->properties[$i]->value) != 0)
-        {
-            return false;
-        }
-    }
-    // if there are no mismatch of property values, then it's an exact match, and we return true
-    return true;
-}
-
 // check if a product exists in an array of combinations
 // if it exists, increase the counter
 // otherwise, push a new combination
+// this is probably really inefficient, and should be optimised for memory usage
+// todo: optimise
 function product_exists($product, &$combinations)
 {
     // compare this product against all combinations' products
     foreach ($combinations as &$combination)
     {
-        if (compare($product, $combination->product))
+        if ($product->compare($combination->product))
         {
             $combination->count++;
             return true;

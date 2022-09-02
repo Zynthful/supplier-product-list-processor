@@ -27,6 +27,14 @@ class ArrayUtils
             }
         }
     }
+
+    public static function filter_empty_lines(&$stringArray)
+    {
+        $stringArray = array_filter($stringArray, static function ($element)
+        {
+            return $element !== "";
+        });
+    }
 }
 
 ?>

@@ -11,6 +11,8 @@ require 'Product.php';
 //                      will be created if not found.
 $givenArgs = getopt("", array("file:", "unique-combinations:", "max-lines"));
 
+// couldn't get global scope variable to work so static variable will work for now
+// todo: make this a global non-static variable
 class Headers
 {
     public static $headers;
@@ -18,8 +20,7 @@ class Headers
 
 function parse($fileName, $maxLines = -1)
 {
-    $previousMemoryLimit = ini_get("memory_limit");
-    ini_set("memory_limit", "256M");    // bandaid solution to not enough memory
+    ini_set("memory_limit", "1024M");   // bandaid solution to not enough memory
                                         // this will need to be changed for longer files
                                         // todo: programmatically increase memory limit based on file length?
 
@@ -33,8 +34,7 @@ function parse($fileName, $maxLines = -1)
     // todo: allow support for different formats (json, xml, etc.)
     $separator = FileUtils::get_separator_from_filename($fileName);
 
-    // assign header information as our properties
-    // todo: allow for different separators (e.g., .tsv file)
+    // explode line to retrieve separated header information
     Headers::$headers = explode($separator, fgets($file));
 
     ArrayUtils::unset_empty_lines(Headers::$headers);
@@ -92,9 +92,6 @@ function parse($fileName, $maxLines = -1)
 
     fclose($file);
 
-    // reset memory limit
-    ini_set("memory_limit", $previousMemoryLimit);
-
     // print product information
     // for ($i = 0; $i < count($products); $i++)
     // {
@@ -135,29 +132,13 @@ function write_combinations($fileName, $combinations)
     fclose($file);
 }
 
-// for ($i = 0; $i < 10; $i++)
-// {
-//     $lines = ($i + 1) * 1000;
-//     $products = parse("D:/Projects/TBPS GitHub Test/examples/products_tab_separated.tsv", $lines);
-
-//     //$products = parse($givenArgs["file"], $givenArgs["max-lines"]);
-//     $combinations = find_combinations($products);
-//     //writeCombinations($givenArgs["unique-combinations"], $combinations);
-    
-//     write_combinations("D:/Projects/TBPS GitHub Test/examples/combination_count.tsv", $combinations);
-
-//     echo PHP_EOL . "{$lines}: Memory Peak (bytes): " . memory_get_peak_usage();
-// }
-
-$products = parse("D:/Projects/TBPS GitHub Test/examples/products_tab_separated.tsv", 40000);
+$products = parse("D:/Projects/TBPS GitHub Test/examples/products_comma_separated.csv", 5900);
+$combinations = find_combinations($products);
+write_combinations("D:/Projects/TBPS GitHub Test/examples/combination_count.csv", $combinations);
 
 //$products = parse($givenArgs["file"], $givenArgs["max-lines"]);
-$combinations = find_combinations($products);
-//writeCombinations($givenArgs["unique-combinations"], $combinations);
+//$combinations = find_combinations($products);
+//write_Combinations($givenArgs["unique-combinations"], $combinations);
 
-write_combinations("D:/Projects/TBPS GitHub Test/examples/combination_count.tsv", $combinations);
-
-echo PHP_EOL . "Memory Peak (MB): " . memory_get_peak_usage() * 0.000001;
-
-
+//echo PHP_EOL . "Memory Peak (MB): " . memory_get_peak_usage() * 0.000001;
 ?>
